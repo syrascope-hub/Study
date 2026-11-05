@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#2f5fd0"><title>مخطط الدراسة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--p:#f4f7fb;--c:#fff;--i:#172036;--m:#6b7590;--b:#2f5fd0;--r:#d9485f;--g:#1f8a5b;--l:#dde4f0}
+@media(prefers-color-scheme:dark){:root{--p:#10151f;--c:#192131;--i:#e8edf7;--m:#93a0ba;--b:#7ea2ff;--r:#ff7b8f;--g:#4fd195;--l:#2a3550}}
+*{box-sizing:border-box}body{margin:0;background:var(--p);color:var(--i);font:16px/1.7 Cairo,system-ui,sans-serif;padding-bottom:110px}
+main{max-width:640px;margin:auto;padding:16px}h1{font-size:22px;margin:4px 0 12px;font-weight:800}
+nav{position:sticky;top:0;display:flex;background:var(--c);border-bottom:2px solid var(--l);z-index:5}
+nav button{flex:1;padding:12px 4px;border:0;background:none;color:var(--m);font:600 15px Cairo,sans-serif;border-bottom:3px solid transparent;margin-bottom:-2px}
+nav button.on{color:var(--b);border-color:var(--b)}
+.card{background:var(--c);border:1px solid var(--l);border-radius:12px;padding:12px 14px;margin:10px 0}
+.item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--l)}.item:last-child{border:0}
+.item input{width:22px;height:22px;margin-top:5px;accent-color:var(--g)}
+.item.d .tx{text-decoration:line-through;color:var(--m)}
+.sub{font-weight:800;color:var(--b);background:none;border:0;padding:0;font-family:inherit;font-size:16px;cursor:pointer}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.btn{background:var(--b);color:#fff;border:0;border-radius:10px;padding:10px 16px;font:600 15px Cairo,sans-serif}.btn.s{background:var(--l);color:var(--i)}
+input[type=text],input[type=password],input[type=date],input[type=time],textarea{width:100%;padding:10px;border:1px solid var(--l);border-radius:8px;background:var(--p);color:var(--i);font:15px Cairo,sans-serif}
+textarea{min-height:64px;margin:4px 0 8px}label{font-weight:600;font-size:14px;color:var(--m)}
+.bar{height:8px;background:var(--l);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--g)}
+summary{font-weight:800;padding:6px 0;cursor:pointer}.day{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--l);cursor:pointer}
+#pom{position:fixed;bottom:0;left:0;right:0;background:var(--i);color:var(--p);padding:10px 16px;display:none;z-index:9}
+#pom .row{max-width:640px;margin:auto}#pom b{font-size:26px;font-variant-numeric:tabular-nums}
+#msg{color:var(--r);font-weight:600}.hide{display:none}
+</style></head><body>
+<nav><button data-t="today" class="on">اليوم</button><button data-t="plan">الجدول</button><button data-t="add">أسبوع جديد</button><button data-t="set">الإعدادات</button></nav>
+<main>
+<section id="today"></section>
+<section id="plan" class="hide"></section>
+<section id="add" class="hide">
+<h1>إضافة أسبوع من صورة</h1>
+<div class="card"><label>صورة برنامج الأسبوع</label><input type="file" id="img" accept="image/*"><p style="margin:10px 0 0"><button class="btn" id="go">حلّل الصورة</button></p><p id="msg"></p></div>
+<div id="prev" class="hide card"><b>راجع الأيام وعدّلها ثم احفظ</b><div id="days"></div><button class="btn" id="save">أضف كأسبوع جديد</button></div>
+</section>
+<section id="set" class="hide">
+<h1>الإعدادات</h1>
+<div class="card"><label>تاريخ بدء الأسبوع الأول</label><input type="date" id="st"></div>
+<div class="card"><label>مفتاح OpenRouter</label><input type="password" id="key" placeholder="sk-or-..."><label>النموذج (يجب أن يقرأ الصور)</label><input type="text" id="mod"><p style="color:var(--m);font-size:13px">يُحفظ المفتاح على جهازك فقط.</p></div>
+<div class="card"><label>وقت التذكير اليومي</label><input type="time" id="rt"><p><button class="btn s" id="nt">فعّل الإشعارات</button></p><p style="color:var(--m);font-size:13px">يصلك التذكير ما دام التطبيق مفتوحًا أو يعمل في الخلفية.</p></div>
+<div class="card"><button class="btn s" id="ex">تصدير نسخة احتياطية</button> <label class="btn s" style="display:inline-block">استيراد<input type="file" id="im" accept=".json" hidden></label></div>
+<div class="card"><button class="btn s" id="rst">إعادة الجدول الأصلي ومسح الإنجاز</button></div>
+</section></main>
+<div id="pom"><div class="row"><span id="pl"></span><b id="pt">60:00</b><span><button class="btn" id="pp">ابدأ</button> <button class="btn s" id="px">إغلاق</button></span></div></div>
+<script>
+const W0=[[
+"رياضيات: متتاليات (≈4 فيديو) • فيزياء: 2 فيديو تأسيس • ديانة: درس تلاوة • عربي: فيديوهات تأسيس (≈5)",
+"رياضيات: 4 فيديو عقدية • كيمياء: نووية (3) + غازات (2) • إنكليزي: قاعدة Unit 1 + نص Student Book • علوم: الدرس 1 + الدرس 3",
+"رياضيات: 4 متتاليات • فرنسي: 6 فيديو • فيزياء: 3 فيديو • ديانة: درس استحفاظ",
+"رياضيات: 2 متتاليات + 2 عقدية • إنكليزي: قاعدة Unit 1 + Everyday English • عربي: 2 تأسيس + قاعدتان • علوم: مراجعة 1 + إتمام 2 + الدرس 4",
+"رياضيات: 4 عقدية • كيمياء: نووية (3) + غازات (2) • فيزياء: 2 فيديو • فرنسي: 4 فيديو • عربي: فيديو تأسيس",
+"فيزياء: فيديو • كيمياء: إتمام النووية + فيديو غازات • إنكليزي: بقية Unit 1 • علوم: إتمام 2 + بداية 5 • عربي: قصيدة عرس المجد",
+"مراجعة: مراجعة + تقصير (رياضيات وعلوم)"],[
+"رياضيات: 5 متتاليات • فيزياء: 5 فيديو نواس فتل • ديانة: حديث + نصف درس حضارة 1 • عربي: 3 تأسيس + القسم الثاني من عرس المجد",
+"رياضيات: 5 متتاليات • كيمياء: غازات (2) • إنكليزي: قاعدة + نص Unit 2 • علوم: مراجعة 4 + الدرس 5 + إتمام 6",
+"رياضيات: 3 متتاليات + 2 عقدية • فرنسي: 3 فيديو • فيزياء: 6 فيديو • ديانة: تلاوة + النصف الثاني من حضارة 1",
+"رياضيات: 5 عقدية • إنكليزي: قاعدة + نص Unit 2 • عربي: 2 تأسيس + قاعدتان • علوم: إتمام 5 + مراجعة 6",
+"رياضيات: 6 عقدية • كيمياء: غازات (2) • فيزياء: 5 فيديو • فرنسي: 2 فيديو",
+"رياضيات: 3 عقدية • كيمياء: غازات (2) • علوم: الدرس 7 • عربي: 2 تأسيس + جزء من قصيدة الجسر • فيزياء: 2 فيديو",
+"مراجعة: مراجعة + تقصير + ما تبقى من قواعد Unit 2"],[
+"رياضيات: 5 نهايات • فيزياء: تأسيس نواس فتل + 3 فيديو • ديانة: حديث (درس 2) + تلاوة (درس 4) • عربي: قاعدة + موضوع الوحدة الأولى",
+"رياضيات: 5 نهايات • كيمياء: غازات (3) • إنكليزي: صوتيات Unit 2 + تمارين قواعد Unit 1 • علوم: بقية الدرس 7 + نصف الدرس 9",
+"رياضيات: 6 عقدية • فرنسي: فيديو • فيزياء: إتمام التأسيس + 2 فيديو • ديانة: إتمام حديث 2 + تلاوة 4 • عربي: قاعدة",
+"رياضيات: 2 عقدية + تأسيس الأشعة • إنكليزي: مفردات Unit 2 + تمارين قواعد • علوم: الدرس 8 + إتمام 9 • عربي: إتمام الجسر + 2 من وطني",
+"رياضيات: 2 عقدية + 2 أشعة • كيمياء: غازات (3) • فيزياء: 4 فيديو • فرنسي: فيديوان (وحدة 2)",
+"رياضيات: 2 عقدية • فيزياء: 4 فيديو • علوم: إتمام 8 + مراجعة 7 و8 و9 • إنكليزي: تمارين قواعد Unit 2 • عربي: 2 وطني",
+"مراجعة: مراجعة + تقصير"],[
+"رياضيات: 2 نهايات + 2 أشعة • فيزياء: نواس مركب (نظري) + 2 نواس ثقلي • عربي: قاعدتان + 2 المهاجر • ديانة: نصف حضارة 2 + نصف حضارة 3",
+"رياضيات: نهايات (1) + أشعة (3) • كيمياء: سرعة التفاعل (3) • إنكليزي: قاعدة Unit 3 + النص الثاني • علوم: الدرس 10 + الدرس 1 مستقبلات",
+"رياضيات: 2 نهايات + 2 أشعة • عربي: 2 المهاجر + قاعدتان • فيزياء: نواس مركب (مسائل) + 2 ثقلي • ديانة: إتمام حضارة 2 و3",
+"رياضيات: 3 أشعة + 2 نهايات • إنكليزي: نص Unit 3 + مفردات وصوتيات • علوم: مراجعة 10 + الدرس 2 • عربي: 3 قواعد",
+"رياضيات: 4 نهايات • كيمياء: سرعة التفاعل (3) • فيزياء: نصف الفيديو 3 + 2 ثقلي • فرنسي: 2 فيديو",
+"رياضيات: 2 أشعة + 2 نهايات • علوم: الدرس 11 + نصف الدرس 3 مستقبلات • عربي: قاعدة + 2 قصيدة الغاب • فيزياء: إتمام الفيديو 3 + ثقلي",
+"مراجعة: مراجعة نهائية + تقصير"]];
+const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const def=()=>({start:'2026-11-06',done:{},weeks:W0,key:'',model:'google/gemini-2.0-flash-001',rt:'17:00',nd:''});
+let S;try{S=Object.assign(def(),JSON.parse(localStorage.getItem('st')||'{}'))}catch(e){S=def()}
+const sv=()=>{try{localStorage.setItem('st',JSON.stringify(S))}catch(e){}};
+const items=d=>d.split(' • ').map(x=>{const i=x.indexOf(':');return i<0?['',x]:[x.slice(0,i).trim(),x.slice(i+1).trim()]});
+const DN=['اليوم الأول','اليوم الثاني','اليوم الثالث','اليوم الرابع','اليوم الخامس','اليوم السادس','اليوم السابع'];
+function todayPos(){const n=Math.floor((new Date(new Date().toDateString())-new Date(S.start+'T00:00'))/864e5);const m=S.weeks.length*7-1;const k=Math.max(0,Math.min(n,m));return[Math.floor(k/7),k%7,n]}
+let cur=null;
+function showT(){if(!cur)cur=todayPos().slice(0,2);const[w,d]=cur,[tw,td,n]=todayPos();const its=items(S.weeks[w][d]);
+const dt=new Date(new Date(S.start+'T00:00').getTime()+(w*7+d)*864e5).toLocaleDateString('ar',{weekday:'long',day:'numeric',month:'long'});
+let h=`<h1>الأسبوع ${w+1} · ${DN[d]}</h1><div class="row" style="color:var(--m)"><span>${dt}</span>${(w!=tw||d!=td)?'<button class="btn s" id="tdy">اليوم</button>':''}</div><div class="card">`;
+its.forEach((x,i)=>{const k=`${w}-${d}-${i}`;h+=`<div class="item ${S.done[k]?'d':''}"><input type="checkbox" data-k="${k}" ${S.done[k]?'checked':''}><div class="tx"><button class="sub" data-p="${esc(x[0])}">${esc(x[0])}</button> ${esc(x[1])}</div></div>`});
+h+=`</div>${od(w,d,tw,td,n)}<div class="row"><button class="btn s" id="pv">السابق</button><button class="btn s" id="nx">التالي</button></div><p style="color:var(--m);font-size:13px">اضغط على اسم المادة لبدء مؤقت Pomodoro (ساعة عمل ثم 10 دقائق راحة).</p>`;
+$('#today').innerHTML=h;
+$('#today').querySelectorAll('input').forEach(e=>e.onchange=()=>{S.done[e.dataset.k]=e.checked;sv();showT()});
+$('#today').querySelectorAll('.sub').forEach(e=>e.onclick=()=>pomo(e.dataset.p));
+const mv=s=>{let k=cur[0]*7+cur[1]+s;if(k<0||k>=S.weeks.length*7)return;cur=[Math.floor(k/7),k%7];showT()};
+$('#pv').onclick=()=>mv(-1);$('#nx').onclick=()=>mv(1);if($('#tdy'))$('#tdy').onclick=()=>{cur=null;showT()}}
+function showP(){const t={},dn={};S.weeks.forEach((wk,w)=>wk.forEach((dy,d)=>items(dy).forEach((x,i)=>{const s=x[0]||'أخرى';t[s]=(t[s]||0)+1;if(S.done[`${w}-${d}-${i}`])dn[s]=(dn[s]||0)+1})));
+let h='<h1>التقدم</h1><div class="card">';Object.keys(t).forEach(s=>{const p=Math.round((dn[s]||0)/t[s]*100);h+=`<div style="margin:6px 0"><div class="row"><span>${esc(s)}</span><span>${p}%</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`});
+h+='</div><h1>الأسابيع</h1>';S.weeks.forEach((wk,w)=>{h+=`<details class="card"><summary>الأسبوع ${w+1}</summary>`;wk.forEach((dy,d)=>{const it=items(dy),c=it.filter((x,i)=>S.done[`${w}-${d}-${i}`]).length;h+=`<div class="day" data-w="${w}" data-d="${d}"><span>${DN[d]}</span><span>${c}/${it.length}</span></div>`});h+='</details>'});
+$('#plan').innerHTML=h;$('#plan').querySelectorAll('.day').forEach(e=>e.onclick=()=>{cur=[+e.dataset.w,+e.dataset.d];tab('today')})}
+function tab(t){document.querySelectorAll('main section').forEach(s=>s.classList.toggle('hide',s.id!=t));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));if(t=='today')showT();if(t=='plan')showP()}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
+let tm=null,rem=3600,mode='w';
+function pomo(s){$('#pom').style.display='block';mode='w';rem=3600;clearInterval(tm);tm=null;$('#pl').textContent=s;$('#pp').textContent='ابدأ';draw()}
+function draw(){$('#pt').textContent=String(Math.floor(rem/60)).padStart(2,'0')+':'+String(rem%60).padStart(2,'0')}
+$('#pp').onclick=()=>{if(tm){clearInterval(tm);tm=null;$('#pp').textContent='تابع';return}$('#pp').textContent='إيقاف';
+tm=setInterval(()=>{rem--;if(rem<=0){mode=mode=='w'?'b':'w';rem=mode=='w'?3600:600;if(navigator.vibrate)navigator.vibrate([300,150,300]);$('#pl').textContent=mode=='w'?'ركّز':'استراحة'}draw()},1000)};
+$('#px').onclick=()=>{clearInterval(tm);tm=null;$('#pom').style.display='none'};
+$('#st').value=S.start;$('#key').value=S.key;$('#mod').value=S.model;
+$('#st').onchange=e=>{S.start=e.target.value;sv()};$('#key').onchange=e=>{S.key=e.target.value.trim();sv()};$('#mod').onchange=e=>{S.model=e.target.value.trim();sv()};
+$('#rst').onclick=()=>{if(confirm('سيُمسح الإنجاز وأي أسابيع أضفتها. متابعة؟')){S.weeks=W0;S.done={};sv();cur=null;tab('today')}};
+const msg=t=>$('#msg').textContent=t;
+function shrink(f){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=no;r.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.85))};im.src=r.result};r.readAsDataURL(f)})}
+$('#go').onclick=async()=>{const f=$('#img').files[0];if(!f)return msg('اختر صورة أولًا.');if(!S.key)return msg('أدخل مفتاح OpenRouter من الإعدادات.');
+msg('جارٍ التحليل...');$('#go').disabled=true;
+try{const u=await shrink(f);const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+S.key},body:JSON.stringify({model:S.model,messages:[{role:'user',content:[{type:'text',text:'هذه صورة برنامج دراسي أسبوعي من المدرسة. استخرج مهام كل يوم من الأيام السبعة بدقة. أعد JSON فقط، بلا شرح، بهذا الشكل: {"days":["رياضيات: المهمة • فيزياء: المهمة", ... 7 عناصر]}. كل عنصر يبدأ باسم المادة ثم نقطتان ثم المهمة، والمواد مفصولة بـ " • ". إن كان اليوم السابع مراجعة فاكتب "مراجعة: ...".'},{type:'image_url',image_url:{url:u}}]}]})});
+const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||r.status);
+const tx=j.choices[0].message.content.replace(/```json|```/g,'').trim();const a=JSON.parse(tx.slice(tx.indexOf('{'),tx.lastIndexOf('}')+1)).days;
+while(a.length<7)a.push('مراجعة: مراجعة + تقصير');
+$('#days').innerHTML=a.slice(0,7).map((x,i)=>`<label>${DN[i]}</label><textarea>${esc(x)}</textarea>`).join('');$('#prev').classList.remove('hide');msg('')}
+catch(e){msg('تعذّر التحليل: '+e.message+' — تحقق من المفتاح والنموذج والاتصال.')}$('#go').disabled=false};
+$('#save').onclick=()=>{const a=[...document.querySelectorAll('#days textarea')].map(t=>t.value.trim()||'مراجعة: مراجعة');S.weeks.push(a);sv();$('#prev').classList.add('hide');$('#img').value='';cur=[S.weeks.length-1,0];tab('today')};
+function od(w,d,tw,td,n){if(w!=tw||d!=td)return'';const lim=Math.min(n,S.weeks.length*7);let h='';for(let k=0;k<lim;k++){const a=Math.floor(k/7),b=k%7;items(S.weeks[a][b]).forEach((x,i)=>{const id=`${a}-${b}-${i}`;if(!S.done[id]&&x[0]!='مراجعة')h+=`<div class="item"><input type="checkbox" data-k="${id}"><div class="tx"><button class="sub" data-p="${esc(x[0])}">${esc(x[0])}</button> ${esc(x[1])} <small style="color:var(--m)">(أسبوع ${a+1} · ${DN[b]})</small></div></div>`})}return h?`<div class="card" style="border-color:var(--r)"><b style="color:var(--r)">متأخر</b>${h}</div>`:''}
+$('#rt').value=S.rt;$('#rt').onchange=e=>{S.rt=e.target.value;sv()};
+$('#nt').onclick=async()=>{if(!('Notification'in window))return alert('متصفحك لا يدعم الإشعارات');const r=await Notification.requestPermission();alert(r=='granted'?'تم تفعيل الإشعارات':'لم يُسمح بالإشعارات')};
+function notify(){if(!('Notification'in window)||Notification.permission!='granted')return;const[w,d]=todayPos();const n=items(S.weeks[w][d]).filter((x,i)=>!S.done[`${w}-${d}-${i}`]).length;const o={body:'باقي '+n+' مهام اليوم',icon:'icon-192.png'};const f=()=>new Notification('مخطط الدراسة',o);navigator.serviceWorker?navigator.serviceWorker.ready.then(r=>r.showNotification('مخطط الدراسة',o)).catch(f):f()}
+setInterval(()=>{const t=new Date(),hm=t.toTimeString().slice(0,5),day=t.toDateString();if(hm==S.rt&&S.nd!=day){S.nd=day;sv();notify()}},30000);
+$('#ex').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='study-backup.json';a.click()};
+$('#im').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!Array.isArray(o.weeks))throw 0;S=Object.assign(def(),o);sv();location.reload()}catch(x){alert('ملف غير صالح')}};r.readAsText(f)};
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+tab('today');
+</script></body></html>
